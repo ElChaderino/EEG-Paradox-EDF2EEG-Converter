@@ -35,7 +35,6 @@ The launcher will automatically:
 
 📁 Available Launchers
 
-(... same tables as you had, no changes ...)
 
 🎯 What This Tool Does
 
@@ -353,3 +352,4 @@ Developers – Extending EEG conversion pipelines
 | **Create Shortcut** | Run `Create_Desktop_Shortcut.bat` |
 
 **Your EEG Paradox converter is ready to handle any EDF file and convert it to any major EEG software format!** 🎉
+
