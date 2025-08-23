@@ -1,0 +1,9 @@
+# EEG Paradox EDF to EEG Converter Dependencies
+# Core scientific computing
+numpy>=1.20.0
+
+# EEG file format support
+mne>=1.0.0
+
+# Optional but recommended for better performance
+scipy>=1.7.0
