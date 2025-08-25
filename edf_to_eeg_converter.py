@@ -47,6 +47,809 @@ try:
 except ImportError:
     print("⚠️  MNE-Python not available - Limited functionality")
 
+# Amplifier specifications database
+AMPLIFIER_DATABASE = {
+    # Nihon Kohden systems
+    'nihon_kohden': {
+        'identifiers': ['nihon', 'kohden', 'nk', 'neurofax'],
+        'typical_range_uv': 3276.8,  # ±3276.8 µV full scale
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 1.0,
+        'notes': 'Standard clinical EEG amplifier'
+    },
+    
+    # BioSemi systems  
+    'biosemi': {
+        'identifiers': ['biosemi', 'activetwo', 'active'],
+        'typical_range_uv': 262144,  # ±262.144 mV (very high range)
+        'resolution_bits': 24,
+        'gain_settings': [1],  # Fixed gain, high resolution
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 1},
+        'scaling_factor': 31.25e-9,  # BioSemi specific scaling
+        'notes': 'High-resolution active electrode system'
+    },
+    
+    # Brain Products (BrainAmp)
+    'brainproducts': {
+        'identifiers': ['brain products', 'brainamp', 'brainvision', 'bp'],
+        'typical_range_uv': 16777.216,  # ±16777.216 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 200, 'frequency_hz': 10},
+        'scaling_factor': 0.1,  # 0.1 µV resolution
+        'notes': 'Research-grade EEG system'
+    },
+    
+    # Neuroscan systems
+    'neuroscan': {
+        'identifiers': ['neuroscan', 'compumedics', 'scan'],
+        'typical_range_uv': 6553.6,  # ±6553.6 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100, 200],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.2,
+        'notes': 'Clinical and research EEG'
+    },
+    
+    # EGI (Electrical Geodesics)
+    'egi': {
+        'identifiers': ['egi', 'electrical geodesics', 'geodesic', 'netstation'],
+        'typical_range_uv': 4096,  # ±4096 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.0625,
+        'notes': 'High-density EEG system'
+    },
+    
+    # ANT Neuro (Advanced Neuro Technology)
+    'ant_neuro': {
+        'identifiers': ['ant neuro', 'ant', 'eego', 'waveguard'],
+        'typical_range_uv': 8192,  # ±8192 µV  
+        'resolution_bits': 24,
+        'gain_settings': [1, 2, 4, 8],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.125,
+        'notes': 'Modern research EEG system'
+    },
+    
+    # g.tec systems
+    'gtec': {
+        'identifiers': ['gtec', 'g.tec', 'guger', 'g.usbamp'],
+        'typical_range_uv': 250000,  # ±250 mV (very high)
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 7.629,  # High sensitivity
+        'notes': 'BCI and research system'
+    },
+    
+    # TMSi systems
+    'tmsi': {
+        'identifiers': ['tmsi', 'refa', 'saga'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 22,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.125,
+        'notes': 'Wireless EEG system'
+    },
+    
+    # Mitsar systems (WinEEG)
+    'mitsar': {
+        'identifiers': ['mitsar', 'wineeg', 'eeg-21', 'eeg-19'],
+        'typical_range_uv': 1638.4,  # ±1638.4 µV (conservative)
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.05,  # High resolution
+        'notes': 'WinEEG native system'
+    },
+    
+    # FreeEEG32 - Open source EEG system
+    'freeeeg32': {
+        'identifiers': ['freeeeg', 'freeeeg32', 'free eeg', 'openeeg'],
+        'typical_range_uv': 1000,  # ±1000 µV typical range
+        'resolution_bits': 24,
+        'gain_settings': [1, 2, 4, 8, 12, 24],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.1,  # Fine resolution
+        'notes': 'Open-source EEG system - may have scaling issues in EDF export'
+    },
+    
+    # OpenBCI systems
+    'openbci': {
+        'identifiers': ['openbci', 'cyton', 'ganglion', 'ultracortex'],
+        'typical_range_uv': 4500,  # ±4.5mV range
+        'resolution_bits': 24,
+        'gain_settings': [1, 2, 4, 6, 8, 12, 24],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 1},
+        'scaling_factor': 0.022,  # 0.022 µV/LSB for ADS1299
+        'notes': 'OpenBCI systems - ADS1299 chipset, often has unit scaling issues'
+    },
+    
+    # Arduino-based EEG systems
+    'arduino_eeg': {
+        'identifiers': ['arduino', 'diy eeg', 'homemade', 'custom eeg'],
+        'typical_range_uv': 3300,  # 3.3V Arduino range
+        'resolution_bits': 10,  # Arduino ADC
+        'gain_settings': [1, 10, 100, 1000],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 3.22,  # 3.3V / 1024 * 1000 µV/mV
+        'notes': 'Arduino-based EEG - often exports raw ADC values'
+    },
+    
+    # Muse headband
+    'muse': {
+        'identifiers': ['muse', 'interaxon', 'muse headband'],
+        'typical_range_uv': 1682,  # ±1682 µV
+        'resolution_bits': 12,
+        'gain_settings': [1],  # Fixed gain
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.48,  # 0.48 µV/LSB
+        'notes': 'Muse consumer EEG headband - may export in different units'
+    },
+    
+    # Emotiv systems
+    'emotiv': {
+        'identifiers': ['emotiv', 'epoc', 'insight', 'flex'],
+        'typical_range_uv': 8400,  # ±8.4mV
+        'resolution_bits': 14,
+        'gain_settings': [1],  # Fixed gain
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.51,  # ~0.51 µV/LSB
+        'notes': 'Emotiv consumer EEG systems - proprietary scaling'
+    },
+    
+    # NeuroSky systems
+    'neurosky': {
+        'identifiers': ['neurosky', 'mindwave', 'tgam'],
+        'typical_range_uv': 3000,  # Estimated range
+        'resolution_bits': 12,
+        'gain_settings': [1],  # Fixed gain
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.73,  # Estimated
+        'notes': 'NeuroSky consumer EEG - single channel, may have scaling issues'
+    },
+    
+    # ModularEEG and similar open-source projects
+    'modulareeg': {
+        'identifiers': ['modulareeg', 'modular eeg', 'openeeg project'],
+        'typical_range_uv': 2500,  # ±2.5V typical
+        'resolution_bits': 10,
+        'gain_settings': [1, 10, 100, 1000],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 2.44,  # 2.5V / 1024 * 1000
+        'notes': 'ModularEEG open-source project - often raw ADC values'
+    },
+    
+    # Olimex EEG systems
+    'olimex': {
+        'identifiers': ['olimex', 'eeg-smt', 'shield-ekg-emg'],
+        'typical_range_uv': 3300,  # 3.3V range
+        'resolution_bits': 10,
+        'gain_settings': [1, 2, 5, 10],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 3.22,  # Similar to Arduino
+        'notes': 'Olimex open-hardware EEG - may need unit conversion'
+    },
+    
+    # Bitalino and similar biosignal platforms
+    'bitalino': {
+        'identifiers': ['bitalino', 'biosignalsplux', 'plux'],
+        'typical_range_uv': 3300,  # 3.3V ADC
+        'resolution_bits': 10,
+        'gain_settings': [1, 2, 10, 100],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 3.22,  # 3.3V/1024*1000
+        'notes': 'Bitalino biosignal platform - often exports ADC counts'
+    },
+    
+    # Cadwell Easy systems
+    'cadwell': {
+        'identifiers': ['cadwell', 'easy', 'easy ii', 'easy iii'],
+        'typical_range_uv': 5000,  # ±5000 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100, 200],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.15,
+        'notes': 'Cadwell clinical EEG systems'
+    },
+    
+    # Grass-Telefactor systems
+    'grass': {
+        'identifiers': ['grass', 'telefactor', 'aura', 'comet', 'heritage'],
+        'typical_range_uv': 10000,  # ±10mV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.3,
+        'notes': 'Grass-Telefactor clinical EEG systems'
+    },
+    
+    # Stellate Harmonie/XLTEK systems
+    'stellate': {
+        'identifiers': ['stellate', 'harmonie', 'xltek', 'neuroworks'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.25,
+        'notes': 'Stellate/XLTEK clinical EEG and sleep systems'
+    },
+    
+    # Persyst systems
+    'persyst': {
+        'identifiers': ['persyst', 'insight', 'reveal'],
+        'typical_range_uv': 4096,  # ±4096 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.125,
+        'notes': 'Persyst clinical EEG analysis systems'
+    },
+    
+    # Natus/Nicolet systems (more comprehensive)
+    'natus_nicolet': {
+        'identifiers': ['natus', 'nicolet', 'viking', 'sleepworks', 'remlogic'],
+        'typical_range_uv': 3276.8,  # ±3276.8 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.1,
+        'notes': 'Natus/Nicolet clinical EEG and sleep systems'
+    },
+    
+    # Micromed systems
+    'micromed': {
+        'identifiers': ['micromed', 'braintrace', 'system plus'],
+        'typical_range_uv': 6553.6,  # ±6553.6 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.2,
+        'notes': 'Micromed clinical EEG systems'
+    },
+    
+    # Nihon Kohden (more specific)
+    'nihon_kohden_neurofax': {
+        'identifiers': ['neurofax', 'nk', 'nihon kohden', 'eeg-1100', 'eeg-1200'],
+        'typical_range_uv': 3276.8,  # ±3276.8 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.1,
+        'notes': 'Nihon Kohden Neurofax clinical EEG systems'
+    },
+    
+    # Medtronic/Covidien systems
+    'medtronic': {
+        'identifiers': ['medtronic', 'covidien', 'invivo', 'cerebus'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16, 32],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.25,
+        'notes': 'Medtronic/Covidien clinical monitoring systems'
+    },
+    
+    # Blackrock Microsystems
+    'blackrock': {
+        'identifiers': ['blackrock', 'cerebus', 'neuroport', 'utah array'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.25,
+        'notes': 'Blackrock neural recording systems'
+    },
+    
+    # Ripple Neuro systems
+    'ripple': {
+        'identifiers': ['ripple', 'grapevine', 'trellis'],
+        'typical_range_uv': 8000,  # ±8mV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.244,
+        'notes': 'Ripple Neuro research systems'
+    },
+    
+    # Alpha Omega systems
+    'alpha_omega': {
+        'identifiers': ['alpha omega', 'alpha-omega', 'neuro omega', 'map system'],
+        'typical_range_uv': 10000,  # ±10mV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.305,
+        'notes': 'Alpha Omega clinical neurophysiology systems'
+    },
+    
+    # Plexon systems
+    'plexon': {
+        'identifiers': ['plexon', 'omniplex', 'cineplex'],
+        'typical_range_uv': 8000,  # ±8mV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16, 32],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.244,
+        'notes': 'Plexon research neurophysiology systems'
+    },
+    
+    # Tucker-Davis Technologies
+    'tdt': {
+        'identifiers': ['tdt', 'tucker davis', 'rz2', 'rz5', 'synapse'],
+        'typical_range_uv': 10000,  # ±10V range typically
+        'resolution_bits': 24,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.596,  # High resolution
+        'notes': 'Tucker-Davis Technologies research systems'
+    },
+    
+    # Intan Technologies
+    'intan': {
+        'identifiers': ['intan', 'rhd2000', 'rhs2000', 'open ephys'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16, 32, 64],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.195,  # 0.195 µV/LSB typical
+        'notes': 'Intan amplifier chips - used in many research systems'
+    },
+    
+    # Multi Channel Systems (MCS)
+    'mcs': {
+        'identifiers': ['mcs', 'multi channel systems', 'mc_rack', 'w2100'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.25,
+        'notes': 'Multi Channel Systems research platforms'
+    },
+    
+    # Nexus systems (Mind Media)
+    'nexus': {
+        'identifiers': ['nexus', 'mind media', 'nexus-10', 'nexus-32', 'biotrace'],
+        'typical_range_uv': 4096,  # ±4096 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16, 32],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.125,
+        'notes': 'Nexus biofeedback and EEG systems'
+    },
+    
+    # WIZ systems (EEG Info)
+    'wiz': {
+        'identifiers': ['wiz', 'eeg info', 'eeginfo', 'wiz eeg'],
+        'typical_range_uv': 3200,  # ±3200 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.098,
+        'notes': 'WIZ EEG systems by EEG Info'
+    },
+    
+    # EEG Info systems (general)
+    'eeginfo': {
+        'identifiers': ['eeg info', 'eeginfo', 'eeg-info'],
+        'typical_range_uv': 3200,  # ±3200 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.098,
+        'notes': 'EEG Info clinical EEG systems'
+    },
+    
+    # Deymed systems
+    'deymed': {
+        'identifiers': ['deymed', 'truscan', 'diagnostic'],
+        'typical_range_uv': 5000,  # ±5000 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.15,
+        'notes': 'Deymed clinical EEG systems'
+    },
+    
+    # Electrical Geodesics (more comprehensive)
+    'egi_comprehensive': {
+        'identifiers': ['egi', 'electrical geodesics', 'geodesic', 'netstation', 'magstim egi'],
+        'typical_range_uv': 4096,  # ±4096 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 4, 8, 16],
+        'calibration_signal': {'amplitude_uv': 100, 'frequency_hz': 10},
+        'scaling_factor': 0.0625,
+        'notes': 'EGI/Magstim high-density EEG systems'
+    },
+    
+    # EB Neuro systems
+    'eb_neuro': {
+        'identifiers': ['eb neuro', 'ebneuro', 'galileo', 'mizar'],
+        'typical_range_uv': 6400,  # ±6400 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.195,
+        'notes': 'EB Neuro clinical EEG systems'
+    },
+    
+    # Compumedics (more comprehensive)
+    'compumedics_comprehensive': {
+        'identifiers': ['compumedics', 'grael', 'siesta', 'profusion', 'e-series'],
+        'typical_range_uv': 8192,  # ±8192 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50, 100, 200],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.25,
+        'notes': 'Compumedics sleep and EEG systems'
+    },
+    
+    # Medcare systems
+    'medcare': {
+        'identifiers': ['medcare', 'flaga', 'embla'],
+        'typical_range_uv': 5000,  # ±5000 µV
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.15,
+        'notes': 'Medcare/Flaga sleep and EEG systems'
+    },
+    
+    # Generic/Unknown systems
+    'generic': {
+        'identifiers': ['unknown', 'generic', 'standard'],
+        'typical_range_uv': 3276.8,  # Conservative default
+        'resolution_bits': 16,
+        'gain_settings': [1, 2, 5, 10, 20, 50],
+        'calibration_signal': {'amplitude_uv': 50, 'frequency_hz': 10},
+        'scaling_factor': 0.1,
+        'notes': 'Generic EEG amplifier assumptions'
+    }
+}
+
+# ------------------------
+# Amplifier Detection and Scaling System
+# ------------------------
+
+def detect_amplifier_system(edf_header, raw_data=None):
+    """
+    Detect amplifier system from EDF header and data characteristics
+    Returns amplifier info and confidence level
+    """
+    detection_results = {
+        'detected_system': 'generic',
+        'confidence': 0.0,
+        'evidence': [],
+        'scaling_recommendations': {},
+        'calibration_detected': False
+    }
+    
+    # Check EDF header fields for amplifier identifiers
+    header_text_fields = []
+    if hasattr(edf_header, 'path'):
+        # Extract text from patient ID, recording info, etc.
+        try:
+            with open(edf_header.path, 'rb') as f:
+                header_bytes = f.read(256)
+                patient_id = header_bytes[8:88].decode('ascii', errors='ignore').lower()
+                recording_info = header_bytes[88:168].decode('ascii', errors='ignore').lower()
+                header_text_fields = [patient_id, recording_info]
+        except:
+            pass
+    
+    # Check transducer fields for amplifier info
+    if hasattr(edf_header, 'transducer'):
+        header_text_fields.extend([t.lower() for t in edf_header.transducer])
+    
+    # Check prefilter fields
+    if hasattr(edf_header, 'prefilt'):
+        header_text_fields.extend([p.lower() for p in edf_header.prefilt])
+    
+    # Score each amplifier system
+    system_scores = {}
+    
+    for amp_name, amp_info in AMPLIFIER_DATABASE.items():
+        score = 0.0
+        evidence = []
+        
+        # Check for identifier matches in header text
+        for identifier in amp_info['identifiers']:
+            for text_field in header_text_fields:
+                if identifier in text_field:
+                    score += 0.3
+                    evidence.append(f"Found '{identifier}' in header text")
+        
+        # Check data range consistency (if data available)
+        if raw_data is not None:
+            try:
+                data_range = np.max(raw_data) - np.min(raw_data)
+                expected_range = amp_info['typical_range_uv']
+                
+                # Check if data range is within expected bounds
+                ratio = data_range / expected_range
+                if 0.1 <= ratio <= 10:  # Within 10x range
+                    range_score = 1.0 - abs(np.log10(ratio)) / 1.0  # Closer to 1.0 = better
+                    score += range_score * 0.4
+                    evidence.append(f"Data range {data_range:.1f}µV matches expected {expected_range:.1f}µV")
+                
+                # Check for calibration signals
+                cal_detected = detect_calibration_signal(raw_data, amp_info['calibration_signal'])
+                if cal_detected:
+                    score += 0.3
+                    evidence.append("Calibration signal detected")
+                    detection_results['calibration_detected'] = True
+                
+            except Exception as e:
+                evidence.append(f"Data analysis failed: {e}")
+        
+        system_scores[amp_name] = {'score': score, 'evidence': evidence}
+    
+    # Find best match
+    best_system = max(system_scores.items(), key=lambda x: x[1]['score'])
+    
+    detection_results['detected_system'] = best_system[0]
+    detection_results['confidence'] = best_system[1]['score']
+    detection_results['evidence'] = best_system[1]['evidence']
+    
+    # Add scaling recommendations
+    amp_spec = AMPLIFIER_DATABASE[best_system[0]]
+    detection_results['scaling_recommendations'] = {
+        'suggested_resolution': amp_spec['scaling_factor'],
+        'typical_range_uv': amp_spec['typical_range_uv'],
+        'resolution_bits': amp_spec['resolution_bits'],
+        'notes': amp_spec['notes']
+    }
+    
+    return detection_results
+
+def detect_calibration_signal(data, cal_spec):
+    """
+    Advanced calibration signal detection (NeuroGuide-style)
+    Detects controlled calibration signals injected during recording
+    """
+    try:
+        if data is None or len(data) == 0:
+            return False
+        
+        expected_amp = cal_spec['amplitude_uv']
+        expected_freq = cal_spec['frequency_hz']
+        
+        # Check if we have enough data for frequency analysis
+        if data.shape[1] < 1000:  # Need at least 1000 samples
+            return False
+        
+        calibration_evidence = []
+        
+        # Look for calibration signals in multiple ways
+        for ch_idx in range(min(data.shape[0], 16)):  # Check up to 16 channels
+            ch_data = data[ch_idx, :]
+            
+            # Method 1: Amplitude-based detection (basic)
+            ch_peak_to_peak = np.max(ch_data) - np.min(ch_data)
+            if 0.5 * expected_amp <= ch_peak_to_peak <= 2.0 * expected_amp:
+                calibration_evidence.append(f"Channel {ch_idx+1}: Amplitude match")
+            
+            # Method 2: Frequency-based detection (NeuroGuide-style)
+            if expected_freq > 0:
+                try:
+                    from scipy import signal as scipy_signal
+                    
+                    # Calculate power spectral density
+                    fs = 256  # Assume 256 Hz if not specified
+                    freqs, psd = scipy_signal.welch(ch_data, fs=fs, nperseg=min(1024, len(ch_data)//4))
+                    
+                    # Find peak frequency
+                    peak_freq_idx = np.argmax(psd)
+                    peak_freq = freqs[peak_freq_idx]
+                    
+                    # Check if peak frequency matches expected calibration frequency
+                    freq_tolerance = 0.5  # ±0.5 Hz tolerance
+                    if abs(peak_freq - expected_freq) <= freq_tolerance:
+                        # Check if this frequency is significantly stronger than surroundings
+                        surrounding_power = np.mean(psd[max(0, peak_freq_idx-5):min(len(psd), peak_freq_idx+6)])
+                        peak_power = psd[peak_freq_idx]
+                        
+                        if peak_power > 3 * surrounding_power:  # 3x stronger than surroundings
+                            calibration_evidence.append(f"Channel {ch_idx+1}: Frequency match at {peak_freq:.1f}Hz")
+                
+                except ImportError:
+                    pass  # scipy not available, skip frequency analysis
+                except Exception:
+                    pass  # Frequency analysis failed
+            
+            # Method 3: Pattern regularity detection
+            # Look for very regular, repeating patterns (typical of calibration signals)
+            try:
+                # Calculate autocorrelation to detect periodic patterns
+                if len(ch_data) > 512:
+                    # Simple regularity check - look for low variance in amplitude
+                    window_size = min(256, len(ch_data) // 10)
+                    windowed_stds = []
+                    for i in range(0, len(ch_data) - window_size, window_size):
+                        window_std = np.std(ch_data[i:i+window_size])
+                        windowed_stds.append(window_std)
+                    
+                    # If all windows have very similar variance, it might be calibration
+                    if len(windowed_stds) > 3:
+                        std_of_stds = np.std(windowed_stds)
+                        mean_std = np.mean(windowed_stds)
+                        
+                        # Very consistent amplitude suggests calibration signal
+                        if std_of_stds < 0.1 * mean_std and mean_std > 0:
+                            calibration_evidence.append(f"Channel {ch_idx+1}: Consistent pattern")
+            
+            except Exception:
+                pass
+        
+        # Method 4: Multi-channel coherence (calibration usually appears on all channels)
+        if len(calibration_evidence) >= min(data.shape[0] * 0.5, 4):  # At least 50% of channels or 4 channels
+            calibration_evidence.append("Multi-channel calibration detected")
+            return True
+        
+        # Method 5: Look for square wave or sine wave patterns (common calibration signals)
+        try:
+            for ch_idx in range(min(data.shape[0], 4)):  # Check first 4 channels
+                ch_data = data[ch_idx, :]
+                
+                # Detect square wave pattern (sharp transitions)
+                diff_data = np.diff(ch_data)
+                large_transitions = np.sum(np.abs(diff_data) > 3 * np.std(diff_data))
+                
+                # Square waves have few but large transitions
+                transition_ratio = large_transitions / len(diff_data)
+                if 0.01 < transition_ratio < 0.1:  # 1-10% of samples are large transitions
+                    # Check if transitions are regular
+                    transition_indices = np.where(np.abs(diff_data) > 3 * np.std(diff_data))[0]
+                    if len(transition_indices) > 4:
+                        intervals = np.diff(transition_indices)
+                        interval_std = np.std(intervals)
+                        interval_mean = np.mean(intervals)
+                        
+                        if interval_std < 0.2 * interval_mean:  # Very regular intervals
+                            calibration_evidence.append(f"Channel {ch_idx+1}: Square wave pattern")
+                            return True
+        
+        except Exception:
+            pass
+        
+        return len(calibration_evidence) > 0
+        
+    except Exception:
+        return False
+
+def calculate_amplifier_aware_resolution(data, amp_detection):
+    """
+    Calculate resolution based on amplifier detection and data characteristics
+    """
+    try:
+        # Get amplifier-specific recommendations
+        amp_system = amp_detection['detected_system']
+        amp_spec = AMPLIFIER_DATABASE[amp_system]
+        confidence = amp_detection['confidence']
+        
+        # Base resolution from amplifier specs
+        suggested_resolution = amp_spec['scaling_factor']
+        
+        # If high confidence in detection, use amplifier-specific resolution
+        if confidence > 0.7:
+            print(f"🎯 High confidence ({confidence:.1%}) amplifier detection: {amp_system}")
+            print(f"   Using amplifier-specific resolution: {suggested_resolution} µV/bit")
+            return suggested_resolution
+        
+        # Medium confidence - blend with data-driven approach
+        elif confidence > 0.3:
+            print(f"🔍 Medium confidence ({confidence:.1%}) amplifier detection: {amp_system}")
+            
+            # Calculate data-driven resolution
+            data_range = np.max(data) - np.min(data)
+            data_driven_resolution = calculate_data_driven_resolution(data_range)
+            
+            # Weighted average based on confidence
+            blended_resolution = (confidence * suggested_resolution + 
+                                (1 - confidence) * data_driven_resolution)
+            
+            print(f"   Blending amplifier-specific ({suggested_resolution}) with data-driven ({data_driven_resolution})")
+            print(f"   Final resolution: {blended_resolution:.6f} µV/bit")
+            return blended_resolution
+        
+        # Low confidence - use data-driven approach with amplifier bounds
+        else:
+            print(f"⚠️  Low confidence ({confidence:.1%}) amplifier detection")
+            print(f"   Using data-driven approach with amplifier constraints")
+            
+            data_range = np.max(data) - np.min(data)
+            data_driven = calculate_data_driven_resolution(data_range)
+            
+            # Constrain to reasonable bounds based on amplifier type
+            min_res = amp_spec['scaling_factor'] * 0.1
+            max_res = amp_spec['scaling_factor'] * 10
+            
+            constrained_resolution = max(min_res, min(max_res, data_driven))
+            print(f"   Constrained resolution: {constrained_resolution:.6f} µV/bit")
+            return constrained_resolution
+            
+    except Exception as e:
+        print(f"⚠️  Amplifier-aware resolution calculation failed: {e}")
+        # Fallback to original method
+        return calculate_data_driven_resolution(np.max(data) - np.min(data))
+
+def calculate_data_driven_resolution(data_range):
+    """
+    Original data-driven resolution calculation as fallback
+    """
+    if data_range < 10:
+        return 0.01  # Very fine resolution for small signals
+    elif data_range < 100:
+        return 0.1   # Fine resolution for normal signals
+    elif data_range < 1000:
+        return 1.0   # Standard resolution
+    elif data_range < 10000:
+        return 10.0  # Coarse resolution for large signals
+    else:
+        return 100.0 # Very coarse for extreme signals
+
+def validate_amplifier_scaling(data, resolution, amp_detection):
+    """
+    Validate that the chosen resolution is appropriate for the detected amplifier
+    """
+    validation = {
+        'resolution_appropriate': True,
+        'warnings': [],
+        'recommendations': []
+    }
+    
+    try:
+        amp_system = amp_detection['detected_system']
+        amp_spec = AMPLIFIER_DATABASE[amp_system]
+        confidence = amp_detection['confidence']
+        
+        # Check if resolution is within reasonable bounds for this amplifier
+        suggested_res = amp_spec['scaling_factor']
+        ratio = resolution / suggested_res
+        
+        if ratio > 100:
+            validation['resolution_appropriate'] = False
+            validation['warnings'].append(f"Resolution {resolution} µV/bit is {ratio:.1f}x higher than expected for {amp_system}")
+            validation['recommendations'].append(f"Consider using {suggested_res} µV/bit for {amp_system} systems")
+        
+        elif ratio < 0.01:
+            validation['resolution_appropriate'] = False
+            validation['warnings'].append(f"Resolution {resolution} µV/bit is {1/ratio:.1f}x lower than expected for {amp_system}")
+            validation['recommendations'].append(f"Consider using {suggested_res} µV/bit for {amp_system} systems")
+        
+        # Check data utilization
+        data_range = np.max(data) - np.min(data)
+        int16_range = 65535 * resolution  # Full INT16 range in µV
+        utilization = data_range / int16_range
+        
+        if utilization < 0.01:
+            validation['warnings'].append(f"Poor INT16 utilization ({utilization:.1%}) - signal may be underutilized")
+            validation['recommendations'].append("Consider using finer resolution to improve precision")
+        
+        elif utilization > 0.95:
+            validation['warnings'].append(f"High INT16 utilization ({utilization:.1%}) - risk of clipping")
+            validation['recommendations'].append("Consider using coarser resolution to prevent clipping")
+        
+        # Amplifier-specific validations
+        if amp_system == 'biosemi' and resolution > 1.0:
+            validation['warnings'].append("BioSemi systems typically use very fine resolution (<1 µV/bit)")
+        
+        elif amp_system == 'mitsar' and resolution > 0.1:
+            validation['warnings'].append("Mitsar/WinEEG systems typically use fine resolution (≤0.1 µV/bit)")
+        
+        elif amp_system == 'gtec' and resolution < 1.0:
+            validation['warnings'].append("g.tec systems typically use coarser resolution (≥1 µV/bit)")
+        
+    except Exception as e:
+        validation['warnings'].append(f"Amplifier validation failed: {e}")
+    
+    return validation
+
 # ------------------------
 # Gunkelman-Grade Validation System
 # ------------------------
@@ -1579,8 +2382,8 @@ class EDFToEEGConverter:
             print(f"❌ Error analyzing EDF file: {e}")
             return None, None
     
-    def calculate_optimal_resolution(self, data):
-        """Calculate optimal resolution for BrainVision format"""
+    def calculate_optimal_resolution(self, data, edf_header=None):
+        """Calculate optimal resolution with amplifier detection for BrainVision format"""
         try:
             # Get data range
             data_min = np.min(data)
@@ -1591,28 +2394,48 @@ class EDFToEEGConverter:
             print(f"   Range: {data_min:.2f} to {data_max:.2f} µV")
             print(f"   Peak-to-peak: {data_range:.2f} µV")
             
-            # Calculate resolution based on data range
-            if data_range < 10:
-                resolution = 0.01  # Very fine resolution for small signals
-                print(f"   → Using fine resolution: {resolution} µV/bit (small signals)")
-            elif data_range < 100:
-                resolution = 0.1   # Fine resolution for normal signals
-                print(f"   → Using fine resolution: {resolution} µV/bit (normal signals)")
-            elif data_range < 1000:
-                resolution = 1.0   # Standard resolution
-                print(f"   → Using standard resolution: {resolution} µV/bit (typical EEG)")
-            elif data_range < 10000:
-                resolution = 10.0  # Coarse resolution for large signals
-                print(f"   → Using coarse resolution: {resolution} µV/bit (large signals)")
-            else:
-                resolution = 100.0 # Very coarse for extreme signals
-                print(f"   → Using very coarse resolution: {resolution} µV/bit (extreme signals)")
+            # Attempt amplifier detection
+            print(f"\n🔍 Amplifier Detection:")
+            amp_detection = detect_amplifier_system(edf_header, data)
+            
+            print(f"   Detected System: {amp_detection['detected_system']}")
+            print(f"   Confidence: {amp_detection['confidence']:.1%}")
+            
+            if amp_detection['evidence']:
+                print(f"   Evidence:")
+                for evidence in amp_detection['evidence'][:3]:  # Show first 3 pieces of evidence
+                    print(f"     • {evidence}")
+                if len(amp_detection['evidence']) > 3:
+                    print(f"     • ... and {len(amp_detection['evidence']) - 3} more")
+            
+            # Calculate amplifier-aware resolution
+            resolution = calculate_amplifier_aware_resolution(data, amp_detection)
+            
+            # Validate the resolution choice
+            validation = validate_amplifier_scaling(data, resolution, amp_detection)
+            
+            if not validation['resolution_appropriate']:
+                print(f"\n⚠️  Resolution Validation Issues:")
+                for warning in validation['warnings']:
+                    print(f"     • {warning}")
+                
+                if validation['recommendations']:
+                    print(f"   Recommendations:")
+                    for rec in validation['recommendations']:
+                        print(f"     • {rec}")
+            
+            # Store amplifier detection results for reporting
+            self.amp_detection_results = amp_detection
+            self.resolution_validation = validation
             
             return resolution
             
         except Exception as e:
             print(f"⚠️  Could not calculate resolution: {e}")
-            return 1.0  # Default fallback
+            print(f"   Falling back to data-driven approach")
+            # Fallback to original method
+            data_range = np.max(data) - np.min(data)
+            return calculate_data_driven_resolution(data_range)
     
     def convert_data_to_int16(self, data, resolution):
         """Convert µV data to INT16 format"""
@@ -1812,7 +2635,93 @@ Mk2=Recording End,,{info['n_samples']},1,0
             except:
                 print("   Could not reload data without scaling")
         
-        resolution = self.calculate_optimal_resolution(data)
+        # Detect and correct unit scaling issues
+        data_range = np.max(data) - np.min(data)
+        original_range = data_range
+        scaling_applied = False
+        
+        print(f"   🔍 Checking data scaling (range: {data_range:.2e})")
+        
+        # Check for various scaling issues common in DIY/open-source EEG systems
+        if data_range < 0.01:  # Extremely small range suggests wrong units
+            print("   🚨 Potential unit scaling issue detected...")
+            
+            # Case 1: Data in Volts (very common with Arduino/OpenBCI exports)
+            if 1e-6 < data_range < 1e-3:
+                print("   📈 Data appears to be in Volts → converting to microvolts")
+                data = data * 1e6  # Convert V to µV
+                scaling_applied = True
+                
+            # Case 2: Data in millivolts
+            elif 1e-3 < data_range < 1:
+                print("   📈 Data appears to be in millivolts → converting to microvolts") 
+                data = data * 1e3  # Convert mV to µV
+                scaling_applied = True
+                
+            # Case 3: Extremely small values (possible double scaling issue)
+            elif data_range < 1e-6:
+                print("   📈 Data extremely small → applying 1M scaling factor")
+                data = data * 1e6
+                scaling_applied = True
+                
+            # Case 4: Check for ADC count scaling (common in DIY systems)
+            elif 1e-5 < data_range < 1e-2:
+                # Might be normalized ADC counts that need scaling
+                max_abs = np.max(np.abs(data))
+                if max_abs < 1.0:  # Normalized to 0-1 range
+                    print("   📈 Data appears to be normalized ADC counts → scaling to µV range")
+                    data = data * 100  # Scale to reasonable µV range
+                    scaling_applied = True
+                
+        # Check for other common scaling issues
+        elif data_range > 100000:  # Very large range
+            print("   🔍 Checking for over-scaled data...")
+            max_abs = np.max(np.abs(data))
+            
+            # Case 5: Data might be in nanovolts or over-amplified
+            if max_abs > 1e6:  # Larger than 1V in µV units
+                print("   📉 Data appears over-scaled → applying 1/1000 scaling")
+                data = data / 1000
+                scaling_applied = True
+            elif max_abs > 100000:  # Very large µV values
+                print("   📉 Data appears over-amplified → applying 1/10 scaling")
+                data = data / 10
+                scaling_applied = True
+                
+        # Check for integer ADC values that need conversion
+        elif np.all(np.abs(data - np.round(data)) < 1e-10):  # All integer values
+            max_val = np.max(np.abs(data))
+            if max_val < 65536 and max_val > 100:  # Looks like ADC counts
+                print("   📈 Data appears to be raw ADC counts → converting to µV")
+                # Assume 3.3V ADC range with appropriate gain
+                if max_val < 1024:  # 10-bit ADC
+                    data = data * (3300 / 1024)  # 3.3V range
+                elif max_val < 4096:  # 12-bit ADC  
+                    data = data * (3300 / 4096)
+                elif max_val < 65536:  # 16-bit ADC
+                    data = data * (3300 / 65536)
+                scaling_applied = True
+        
+        # Final validation and reporting
+        if scaling_applied:
+            new_range = np.max(data) - np.min(data)
+            print(f"   ✅ Scaling applied: {original_range:.2e} → {new_range:.2f} µV")
+            print(f"   📊 Final data range: {np.min(data):.2f} to {np.max(data):.2f} µV")
+            
+            # Store scaling info for reporting
+            info['scaling_applied'] = {
+                'original_range': original_range,
+                'final_range': new_range,
+                'scaling_factor': new_range / original_range if original_range > 0 else 1,
+                'method': 'automatic_unit_detection'
+            }
+        else:
+            if data_range < 1:
+                print(f"   ⚠️  Warning: Unusual small data range ({data_range:.2e}) - may affect conversion quality")
+            elif data_range > 50000:
+                print(f"   ⚠️  Warning: Unusual large data range ({data_range:.2e}) - may affect conversion quality")
+        
+        resolution = self.calculate_optimal_resolution(data, info.get('edf_header'))
         
         # Step 3: Convert to INT16
         print(f"\n🔄 Data Conversion:")
@@ -2247,6 +3156,17 @@ Created={datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
                 if sig_qc.get("ok"):
                     report["signal_qc"] = sig_qc
             
+            # Add amplifier detection results if available
+            if hasattr(self, 'amp_detection_results'):
+                report["amplifier_detection"] = self.amp_detection_results
+            
+            if hasattr(self, 'resolution_validation'):
+                report["resolution_validation"] = self.resolution_validation
+            
+            # Add scaling information if available
+            if info.get('scaling_applied'):
+                report["scaling_correction"] = info['scaling_applied']
+            
             # Generate report files
             base_path = Path(edf_file_path).stem
             output_dir = Path(edf_file_path).parent
@@ -2346,6 +3266,65 @@ Created={datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
                         lines.append(f"Channel Warnings: {len(ch_clin['warnings'])}")
                         for warning in ch_clin["warnings"][:3]:
                             lines.append(f"  ⚠️  {warning}")
+                lines.append("")
+            
+            # Amplifier Detection Results
+            if report.get("amplifier_detection"):
+                amp_det = report["amplifier_detection"]
+                lines.append("🔍 AMPLIFIER DETECTION")
+                lines.append("-" * 40)
+                lines.append(f"Detected System: {amp_det['detected_system'].upper()}")
+                lines.append(f"Detection Confidence: {amp_det['confidence']:.1%}")
+                
+                if amp_det.get('calibration_detected'):
+                    lines.append("Calibration Signal: DETECTED")
+                else:
+                    lines.append("Calibration Signal: NOT DETECTED")
+                
+                if amp_det.get('evidence'):
+                    lines.append("Evidence:")
+                    for evidence in amp_det['evidence'][:5]:
+                        lines.append(f"  • {evidence}")
+                    if len(amp_det['evidence']) > 5:
+                        lines.append(f"  • ... and {len(amp_det['evidence']) - 5} more")
+                
+                scaling_rec = amp_det.get('scaling_recommendations', {})
+                if scaling_rec:
+                    lines.append(f"Recommended Resolution: {scaling_rec.get('suggested_resolution', 'N/A')} µV/bit")
+                    lines.append(f"Typical Range: ±{scaling_rec.get('typical_range_uv', 'N/A')} µV")
+                    lines.append(f"System Notes: {scaling_rec.get('notes', 'N/A')}")
+                
+                lines.append("")
+            
+            # Resolution Validation
+            if report.get("resolution_validation"):
+                res_val = report["resolution_validation"]
+                lines.append("⚖️  RESOLUTION VALIDATION")
+                lines.append("-" * 40)
+                lines.append(f"Resolution Appropriate: {pretty_bool(res_val.get('resolution_appropriate', True))}")
+                
+                if res_val.get('warnings'):
+                    lines.append("Warnings:")
+                    for warning in res_val['warnings']:
+                        lines.append(f"  ⚠️  {warning}")
+                
+                if res_val.get('recommendations'):
+                    lines.append("Recommendations:")
+                    for rec in res_val['recommendations']:
+                        lines.append(f"  💡 {rec}")
+                
+                lines.append("")
+            
+            # Scaling Correction Results
+            if report.get("scaling_correction"):
+                scaling = report["scaling_correction"]
+                lines.append("📏 SCALING CORRECTION")
+                lines.append("-" * 40)
+                lines.append(f"Original Range: {scaling['original_range']:.2e}")
+                lines.append(f"Final Range: {scaling['final_range']:.2f} µV")
+                lines.append(f"Scaling Factor: {scaling['scaling_factor']:.1f}x")
+                lines.append(f"Method: {scaling['method'].replace('_', ' ').title()}")
+                lines.append("✅ Unit scaling correction applied successfully")
                 lines.append("")
             
             # Cross-Checks Results
@@ -2532,6 +3511,19 @@ Created={datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
                 advanced_features.append("✅ Enhanced EDF header validation")
             if report.get("clinical_validation"):
                 advanced_features.append("✅ Clinical standards compliance")
+            if report.get("amplifier_detection"):
+                amp_det = report["amplifier_detection"]
+                confidence = amp_det.get('confidence', 0)
+                if confidence > 0.7:
+                    advanced_features.append(f"✅ Amplifier detection ({amp_det['detected_system']} - {confidence:.0%})")
+                else:
+                    advanced_features.append(f"⚠️ Amplifier detection (low confidence - {confidence:.0%})")
+            if report.get("resolution_validation"):
+                res_val = report["resolution_validation"]
+                if res_val.get('resolution_appropriate'):
+                    advanced_features.append("✅ Resolution optimization validated")
+                else:
+                    advanced_features.append("⚠️ Resolution optimization (with warnings)")
             if report.get("signal_qc", {}).get("spectral_analysis"):
                 advanced_features.append("✅ Advanced spectral analysis")
             if report.get("signal_qc", {}).get("advanced_artifacts"):
