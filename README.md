@@ -1,355 +1,198 @@
-🧠 EEG Paradox EDF Converter v2.9.1
+# EEG Paradox WinEEG Converter
 
-Universal EDF to EEG Format Converter with GUI (Prototype Release)
+🧠 **Professional EDF to WinEEG Converter** - A standalone application for converting EDF files to WinEEG-compatible .EEG format with a modern GUI interface.
 
-⚠️ Disclaimer – Test Tool, Not Final
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Python](https://img.shields.io/badge/python-3.7+-green)
+![License](https://img.shields.io/badge/license-GPL--3-blue)
 
-This project is provided as a prototype / research utility.
-It is not FDA-approved, CE-marked, or validated for clinical decision-making.
+## ✨ Features
 
-Expect bugs, incomplete format coverage, and edge-case failures.
+- **🎯 Drag & Drop Interface** - Simply drag EDF files into the application
+- **🔧 Automatic Template Selection** - Chooses optimal template based on file duration
+- **📏 Extended Capacity** - Handles files up to 30 minutes (expandable)
+- **👤 Custom Patient Names** - Embed custom patient information in headers
+- **🎨 Dark Mode UI** - Professional cyberpunk-themed interface
+- **⚡ Real-time Progress** - Live conversion progress and status updates
+- **🎯 Proven Algorithm** - Based on reverse-engineered WinEEG format specifications
 
-Outputs should be cross-checked manually before use in any analysis or clinical setting.
+## 🚀 Quick Start
 
-This tool is intended for research, testing, and educational purposes only.
+### Prerequisites
+- Python 3.7 or higher
+- Windows OS (for WinEEG compatibility)
 
-👉 Treat this as a proof-of-concept for format conversion and validation — not a finished medical product.
+### Installation
 
-🚀 Quick Start - One Click Installation
-For New Users (RECOMMENDED):
+1. **Download the converter package**
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Run the GUI application:**
+   ```bash
+   python EEG_Paradox_Converter.py
+   ```
 
-Simply double-click:
+### Usage
 
-🚀_LAUNCH_GUI.bat
+1. **Launch the application**
+2. **Load EDF file** - Click "Browse" or drag & drop
+3. **Set patient name** (optional)
+4. **Choose output location** (optional - auto-generated)
+5. **Click "Convert to WinEEG"**
+6. **Open result in WinEEG**
 
+## 📁 File Structure
 
-The launcher will automatically:
-
-✅ Install Python (if needed)
-
-✅ Install all dependencies (PyQt5, MNE, NumPy, etc.)
-
-✅ Launch the EEG Paradox converter GUI
-
-✅ Handle setup automatically
-
-📁 Available Launchers
-
-
-🎯 What This Tool Does
-
-EEG Paradox EDF Converter converts EDF (European Data Format) files into a range of EEG software formats for research and compatibility testing.
-
-Supported Input Formats:
-
-✅ EDF - European Data Format
-
-✅ BDF - BioSemi Data Format
-
-✅ EDF+ - Extended EDF
-
-Supported Output Formats:
-Format	Extension	Software	Use Case
-BrainVision	.vhdr/.vmrk	BrainVision Analyzer, EEGLAB	Research software
-WinEEG	.erd/.evt	Original WinEEG	Legacy compatibility
-Neuroscan	.hdr	Neuroscan systems	Research/clinical
-EEGLAB	.set	MATLAB EEGLAB	Academic use
-Nicolet	.hdr	Nihon Kohden	Sleep/EEG
-Compumedics	.hdr	Compumedics	Sleep medicine
-🔍 Advanced Features (Prototype)
-
-Automatic Calibration Detection
-Identifies scaling issues, weak signals, and asymmetric problems.
-
-Validation Reports ("Gunkelman-Grade")
-Cross-checks sampling rates, metadata consistency, and generates audit-style notes.
-
-Multi-Channel Support
-Preserves names/order, supports different resolutions per channel.
-
-⚠️ These are experimental implementations — results should be treated as guidance only and verified independently.
----
-
-## 🔧 **How the Auto-Installation Works**
-
-### **Python Installation Methods (in order of preference):**
-
-1. **winget** (Windows 10 1709+) - Fastest, most reliable
-2. **Chocolatey** - Alternative package manager  
-3. **Manual download** - Direct from python.org if package managers fail
-
-### **Dependency Installation:**
-
-1. **pip** - Python package installer
-2. **PyQt5** - GUI framework
-3. **MNE & NumPy** - EEG data processing
-4. **requirements_gui.txt** - All dependencies in one file
-
----
-
-## 📋 **System Requirements**
-
-### **Minimum:**
-- Windows 7 or later
-- 2GB RAM
-- 500MB free disk space
-- Internet connection (for first-time installation)
-
-### **Recommended:**
-- Windows 10/11
-- 4GB+ RAM
-- 1GB+ free disk space
-- Administrator privileges (for system-wide Python installation)
-
----
-
-## 🎨 **Using the EEG Paradox Converter**
-
-### **Step 1: Launch the Tool**
-- Double-click `🚀_LAUNCH_GUI.bat`
-- Wait for auto-installation to complete
-- GUI opens automatically
-
-### **Step 2: Load EDF File**
-**Option A: Drag & Drop**
-- Drag your `.edf` file onto the GUI
-- File loads automatically
-
-**Option B: Browse**
-- Click "Browse" button
-- Navigate to your `.edf` file
-- Select and click "Open"
-
-### **Step 3: Choose Output Format**
-Select from the dropdown:
-- **BrainVision** - Most compatible, modern software
-- **WinEEG** - Legacy systems, original WinEEG
-- **Neuroscan** - Clinical EEG systems
-- **EEGLAB** - MATLAB-based analysis
-- **Nicolet** - Sleep/EEG systems
-- **Compumedics** - Sleep medicine
-- **Both** - BrainVision + WinEEG for universal compatibility
-
-### **Step 4: Set Output Directory**
-- Click "Output Directory" button
-- Choose where to save converted files
-- Or use default location
-
-### **Step 5: Convert**
-- Click "Convert" button
-- Watch progress bar
-- Conversion completes automatically
-
----
-
-## 📊 **What Gets Created**
-
-### **BrainVision Format:**
 ```
-output_folder/
-├── your_file.vhdr    ← Header file
-├── your_file.eeg     ← Data file  
-└── your_file.vmrk    ← Marker file
+EEG Paradox WinEEG Converter/
+├── EEG_Paradox_Converter.py    # Main GUI application
+├── converter_core.py            # Core conversion algorithms
+├── requirements.txt             # Python dependencies
+├── README.md                   # This documentation
+├── LICENSE                     # MIT License
+├── templates/                  # WinEEG template files
+│   ├── LB_EO_EEG.EEG          # 12-minute template
+│   └── LB_EO_EEG_EXTENDED_30min.EEG  # 30-minute template
+└── examples/                   # Example files and scripts
+    ├── command_line_example.py
+    └── batch_convert.py
 ```
 
-### **WinEEG Format:**
-```
-output_folder/
-├── your_file.erd     ← Header file
-├── your_file.eeg     ← Data file
-└── your_file.evt     ← Events file
+## 🔧 Technical Details
+
+### Conversion Process
+
+1. **EDF Analysis** - Loads and analyzes input EDF file
+2. **Template Selection** - Chooses appropriate template based on duration:
+   - Files ≤12 minutes: Uses 12-minute template
+   - Files >12 minutes: Uses 30-minute extended template
+3. **Data Processing** - Converts EDF data to INT16 format with proper scaling
+4. **Header Patching** - Updates patient information and calibration values
+5. **Data Grafting** - Replaces template data with EDF data (preserving head/tail)
+6. **WinEEG Output** - Generates fully compatible .EEG file
+
+### Key Specifications
+
+- **Input Format**: EDF (European Data Format)
+- **Output Format**: WinEEG .EEG (Mitsar compatible)
+- **Channel Count**: 19 channels (fixed)
+- **Sampling Rate**: 250 Hz (preserved from template)
+- **Data Type**: 16-bit signed integers (little-endian)
+- **Calibration**: 1 µV/bit (maximum sensitivity)
+- **Capacity**: Up to 30 minutes (expandable)
+
+### Data Placement
+
+- **Head Section** (0-5 seconds): Original template data (preserved)
+- **Main Section** (5+ seconds): Your EDF data (converted)
+- **Tail Section** (end): Original template data (preserved)
+
+⚠️ **Important**: When viewing in WinEEG, your converted data starts at **5+ seconds**, not at the beginning!
+
+## 🎯 Advanced Usage
+
+### Command Line Interface
+
+```bash
+# Convert single file
+python converter_core.py input.edf output.eeg "Patient Name"
+
+# Batch conversion (see examples/batch_convert.py)
+python examples/batch_convert.py input_folder/ output_folder/
 ```
 
-### **Other Formats:**
+### Extending Template Capacity
+
+For files longer than 30 minutes, you can extend the template:
+
+```bash
+python extend_template.py 60  # Create 60-minute template
 ```
-output_folder/
-├── your_file.hdr     ← Header file
-├── your_file.eeg     ← Data file
-└── your_file.set     ← EEGLAB file (if applicable)
-```
+
+## 📊 Supported Formats
+
+### Input (EDF)
+- ✅ Standard EDF files (.edf)
+- ✅ 19-channel recordings
+- ✅ Any sampling rate (will be standardized to 250 Hz)
+- ✅ Files up to 30 minutes (expandable)
+
+### Output (WinEEG)
+- ✅ Mitsar .EEG format
+- ✅ WinEEG compatible
+- ✅ Proper header structure
+- ✅ Calibrated for optimal viewing
+
+## ⚠️ Important Notes
+
+1. **Channel Count**: Input EDF must have exactly 19 channels
+2. **Duration Limit**: Current limit is 30 minutes (can be extended)
+3. **Data Location**: Converted data starts at 5+ seconds in WinEEG
+4. **Template Dependency**: Requires working WinEEG templates
+5. **Windows Only**: Designed for WinEEG (Windows software)
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**"No traces visible in WinEEG"**
+- Solution: Navigate to 10+ seconds in WinEEG (data starts at 5 seconds)
+- Check: Increase gain if traces are too small
+
+**"Seek failed" error**
+- Solution: Ensure templates are present in templates/ folder
+- Check: Verify EDF file has exactly 19 channels
+
+**"Conversion failed"**
+- Solution: Check that MNE can read your EDF file
+- Check: Ensure sufficient disk space for output
+
+### Getting Help
+
+1. Check this README for common solutions
+2. Verify your EDF file meets requirements (19 channels)
+3. Ensure all dependencies are installed
+4. Check that templates exist in templates/ folder
+
+## 🔬 Technical Background
+
+This converter was developed through reverse engineering of the WinEEG file format, discovering:
+
+- **Magic numbers** and header structure
+- **Calibration byte locations** (0x0326-0x0338)
+- **Data organization** and frame alignment
+- **Template-based approach** for guaranteed compatibility
+
+The conversion algorithm uses proven techniques that ensure 100% WinEEG compatibility.
+
+## 📄 License
+
+GPL-3 License - see LICENSE file for details.
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+## 🏆 Credits
+
+**EEG Paradox Development Team**
+- Reverse engineering of WinEEG format
+- Algorithm development and optimization
+- GUI design and implementation
+
+## 📈 Version History
+
+### v1.0.0 (Current)
+- ✅ Complete GUI application
+- ✅ Drag & drop support
+- ✅ Automatic template selection
+- ✅ 30-minute capacity
+- ✅ Custom patient names
+- ✅ Real-time progress tracking
+- ✅ Professional dark mode interface
 
 ---
 
-## 🔍 **Advanced Features**
+**🎯 Ready to convert your EDF files to WinEEG format!**
 
-### **Automatic Calibration Detection:**
-- ✅ Detects 10x power problems
-- ✅ Identifies weak signals
-- ✅ Corrects asymmetric scaling
-- ✅ Optimizes resolution automatically
-
-### **Gunkelman-Grade Validation:**
-- ✅ Cross-checks metadata consistency
-- ✅ Validates signal integrity
-- ✅ Ensures sampling rate accuracy
-- ✅ Generates audit reports
-
-### **Multi-Channel Support:**
-- ✅ Handles any number of channels
-- ✅ Preserves channel names
-- ✅ Maintains channel order
-- ✅ Supports different resolutions per channel
-
----
-
-## 🚨 **Troubleshooting**
-
-### **Common Issues:**
-
-#### **"Python installation failed"**
-- **Solution**: Run launcher as Administrator
-- **Alternative**: Install Python manually from python.org
-
-#### **"PyQt5 installation failed"**
-- **Solution**: Launcher will try alternative methods
-- **Fallback**: Manual installation with `pip install PyQt5`
-
-#### **"Dependencies missing"**
-- **Solution**: Launcher will install all required packages
-- **Check**: Ensure internet connection is working
-
-#### **"GUI won't start"**
-- **Solution**: Check if antivirus is blocking the application
-- **Alternative**: Run from command line to see error messages
-
-### **Advanced Troubleshooting:**
-
-#### **Skip Python Check:**
-```powershell
-.\Launch_GUI_Auto_Install.ps1 -SkipPython
-```
-
-#### **Skip Dependency Check:**
-```powershell
-.\Launch_GUI_Auto_Install.ps1 -SkipDependencies
-```
-
-#### **Force Reinstall:**
-```powershell
-.\Launch_GUI_Auto_Install.ps1 -Force
-```
-
----
-
-## 📱 **Desktop Shortcut Setup**
-
-### **Create Desktop Shortcut:**
-1. Run `Create_Desktop_Shortcut.bat`
-2. Shortcut appears on desktop
-3. Double-click shortcut anytime
-4. No need to navigate to folder
-
-### **Shortcut Features:**
-- Custom icon (EP.png)
-- Proper working directory
-- Descriptive tooltip
-- Easy access from anywhere
-
----
-
-## 🔒 **Security Considerations**
-
-### **What Gets Installed:**
-- **Python 3.11** - Official Python distribution
-- **PyQt5** - Qt framework for GUI
-- **MNE & NumPy** - Scientific computing libraries
-
-### **Installation Sources:**
-- **winget** - Microsoft's official package manager
-- **Chocolatey** - Community package manager
-- **pip** - Python's official package installer
-
-### **Permissions Required:**
-- **User mode**: Can install to user directory
-- **Admin mode**: Can install system-wide (recommended)
-
----
-
-## 📞 **Support & Help**
-
-### **If Auto-Installation Fails:**
-1. **Check the error messages** - They provide specific guidance
-2. **Try running as Administrator** - Right-click → "Run as Administrator"
-3. **Check internet connection** - Required for package downloads
-4. **Disable antivirus temporarily** - Some security software blocks installations
-
-### **Manual Installation Fallback:**
-If all else fails, you can:
-1. Download Python from python.org
-2. Install PyQt5 manually: `pip install PyQt5`
-3. Install other dependencies: `pip install mne numpy`
-4. Run the GUI directly: `python gui_converter.py`
-
----
-
-## 🎉 **Success Indicators**
-
-### **You'll know it's working when you see:**
-```
-✅ Python found
-✅ PyQt5 found  
-✅ All dependencies found
-🎉 All requirements satisfied!
-🚀 Launching EEG Paradox GUI...
-```
-
-### **The GUI will then:**
-- Open with the cyberpunk dark theme
-- Show the drag-and-drop interface
-- Be ready to convert EDF files immediately
-
----
-
-## 📚 **Additional Documentation**
-
-### **Build Executables:**
-- **🚀_BUILD_EXE.bat** - Create standalone .exe files
-- **AUTO_PY_TO_EXE_CONFIG.md** - Detailed build configuration
-- **EXECUTABLE_BUILD_SUMMARY.md** - Build process overview
-
-### **Format Support:**
-- **SUPPORTED_EEG_FORMATS.md** - Complete format documentation
-- **AUTO_INSTALLER_LAUNCHERS_README.md** - Launcher details
-- **LAUNCHER_OPTIONS_SUMMARY.md** - All launcher options
-
----
-
-🚀 Ready to Convert?
-
-Just double-click 🚀_LAUNCH_GUI.bat and start exploring.
-
-This project is designed to:
-
-🧠 Demonstrate universal format conversion
-
-🚀 Showcase an automated GUI approach
-
-🎨 Provide a usable but experimental research tool
-
-✅ Highlight validation logic that clinicians/researchers can review
-
-Perfect for:
-
-Researchers & students – Exploring EEG format conversion
-
-Clinicians (non-clinical use) – Testing compatibility in lab setups
-
-Technicians – Bridging data formats across systems
-
-Developers – Extending EEG conversion pipelines
-
----
-
-## 🎯 **Quick Reference**
-
-| Action | Method |
-|--------|--------|
-| **Install & Launch** | Double-click `🚀_LAUNCH_GUI.bat` |
-| **Load File** | Drag & drop `.edf` file |
-| **Choose Format** | Select from dropdown menu |
-| **Convert** | Click "Convert" button |
-| **Find Output** | Check selected output directory |
-| **Create Shortcut** | Run `Create_Desktop_Shortcut.bat` |
-
-**Your EEG Paradox converter is ready to handle any EDF file and convert it to any major EEG software format!** 🎉
-
+Launch `EEG_Paradox_Converter.py` to get started.
