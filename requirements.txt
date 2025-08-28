@@ -1,0 +1,17 @@
+# EEG Paradox WinEEG Converter Requirements
+# =======================================
+
+# Core dependencies
+numpy>=1.21.0
+mne>=1.0.0
+
+# GUI dependencies
+tkinter  # Usually included with Python
+
+# Optional dependencies for enhanced functionality
+scipy>=1.7.0
+matplotlib>=3.5.0
+
+# Development dependencies (optional)
+# pytest>=6.0.0
+# black>=21.0.0
